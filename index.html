@@ -238,34 +238,30 @@
 			.bk-container:nth-of-type(6){
 				background-color: #0f1410;
 			}
+			
+			.artical-action-mid {
+				position: fixed;
+				z-index: 10002;
+				width: 100%;
+				height: 40%;
+				top: 30%;
+			}
 		</style>
 	</head>
 	<body>
 		<div id="root" class="container">
-		    <div id="top-nav" class="top-nav">
+			
+			<div class="m-artical-action">
+				<div class="artical-action-mid" id="action_mid"></div>
+			</div>
+			
+		    <div id="top-nav" class="top-nav" style="display: none;">
 		        <div class="icon-back"></div>
 		        <div class="nav-title">返回书架</div>
 		    </div>
 		    <div id="fiction_chapter_title"></div>
 		    <div id="fiction_container" class="m-read-content">
-		        <h4>能得七皇子青眼</h4>
-		        <p>
-		        	彼时场中诸女，除了心中有鬼的江若雪，江若晴江若雨以及几个丫鬟乍一见他，几乎都羞得红了脸，小心肝怦怦直跳。
-		         	彼时场中诸女，除了心中有鬼的江若雪，江若晴江若雨以及几个丫鬟乍一见他，几乎都羞得红了脸，小心肝怦怦直跳。
-		         	彼时场中诸女，除了心中有鬼的江若雪，江若晴江若雨以及几个丫鬟乍一见他，几乎都羞得红了脸，小心肝怦怦直跳。
-		        </p>
-		        <p>
-		        	彼时场中诸女，除了心中有鬼的江若雪，江若晴江若雨以及几个丫鬟乍一见他，几乎都羞得红了脸，小心肝怦怦直跳。
-		        	彼时场中诸女，除了心中有鬼的江若雪，江若晴江若雨以及几个丫鬟乍一见他，几乎都羞得红了脸，小心肝怦怦直跳。
-		        </p>
-		        <p>
-		        	彼时场中诸女，除了心中有鬼的江若雪，江若晴江若雨以及几个丫鬟乍一见他，几乎都羞得红了脸，小心肝怦怦直跳。
-		        	彼时场中诸女，除了心中有鬼的江若雪，江若晴江若雨以及几个丫鬟乍一见他，几乎都羞得红了脸，小心肝怦怦直跳。
-		        	彼时场中诸女，除了心中有鬼的江若雪，江若晴江若雨以及几个丫鬟乍一见他，几乎都羞得红了脸，小心肝怦怦直跳。
-		        	彼时场中诸女，除了心中有鬼的江若雪，江若晴江若雨以及几个丫鬟乍一见他，几乎都羞得红了脸，小心肝怦怦直跳。
-		        	彼时场中诸女，除了心中有鬼的江若雪，江若晴江若雨以及几个丫鬟乍一见他，几乎都羞得红了脸，小心肝怦怦直跳。
-		        	彼时场中诸女，除了心中有鬼的江若雪，江若晴江若雨以及几个丫鬟乍一见他，几乎都羞得红了脸，小心肝怦怦直跳。
-		        </p>
+		        
 		    </div>
 		    <div class="m-button-bar">
 		        <ul class="u-tab">
@@ -274,8 +270,8 @@
 		        </ul>
 		    </div>
 		    
-		    <div class="top-nav-pannel-bk"></div>
-		    <div class="top-nav-pannel" id="font-container">
+		    <div class="top-nav-pannel-bk top_nav_pannel" style="display: none;"></div>
+		    <div class="top-nav-pannel top_nav_pannel" id="font-container" style="display: none;">
 		        <div class="child-mod">
 		            <span>字号</span>
 		            <button id="large-font" class="font-size-button">大</button>
@@ -304,8 +300,8 @@
 		        </div>
 		    </div>
 		    
-		    <div class="bottom-nav-bk bottom_nav"></div>
-			<div class="bottom-nav bottom_nav">
+		    <div class="bottom-nav-bk bottom_nav" style="display: none;"></div>
+			<div class="bottom-nav bottom_nav" style="display: none;">
 				<div class="item menu-button" id="menu_button">
 					<div class="item-warp">
 						<div class="icon-menu"></div>
@@ -314,7 +310,7 @@
 						</div>
 					</div>
 				</div>
-				<div class="item" id="font-button">
+				<div class="item" id="font_button">
 					<div class="item-warp">
 						<div class="icon-ft"></div>
 						<div class="icon-text">
@@ -322,7 +318,7 @@
 						</div>
 					</div>
 				</div>
-				<div class="item" id="night-button">
+				<div class="item" id="night_button">
 					<div class="item-warp" style="display:none" id="day_icon">
 						<div class="icon-day"></div>
 						<div class="icon-text">
@@ -346,6 +342,254 @@
 		<script src="js/jquery.jsonp.js"></script>
 
 		<script>
+			(function(){
+				'use strict';
+				var Util = (function(){
+					var prefix = 'html5_reader_'
+					var StorageGetter = function(key){
+						return localStorage.getItem(prefix + key)
+					}
+					var StorageSetter = function(key,val){
+						return localStorage.setItem(prefix + key, val)
+					}
+					var getBSONP = function(url, callback){
+						return $.jsonp({
+							url: url,
+							cache: true,
+							callback: 'duokan_fiction_chapter',
+							success: function(result){
+								var data = $.base64.decode(result);
+								var json = decodeURIComponent(escape(data));
+								callback(json);
+							}
+						})
+					}
+					return {
+						getBSONP:getBSONP,
+						StorageGetter:StorageGetter,
+						StorageSetter:StorageSetter
+					}
+				})();
+				
+				var Dom = {
+					top_nav: $('#top-nav'),
+					bottom_nav: $('.bottom_nav'),
+					font_button: $('#font_button'),
+					top_nav_pannel: $('.top_nav_pannel'),
+					fiction_container: $('#fiction_container'),
+					bk_container: $('.bk_container')
+				}
+				var Win = $(window);
+				var Doc = $(document);
+				var readerModel;
+				var readerUI;
+				var RootContainer = $('#fiction_container');
+				var initFontSize = Util.StorageGetter('font_size');
+				initFontSize = parseInt(initFontSize);
+				if(!initFontSize){
+					initFontSize = 14;
+				}
+				Dom.fiction_container.css('font-size', initFontSize);
+				
+				function main(){
+					//todo 整个项目的入口函数
+					readerModel = ReaderModel();
+					readerUI = ReaderBaseFrame(RootContainer);
+					readerModel.init(function(data){
+						readerUI(data);
+					});
+					EventHanlder();
+					
+				}
+				
+				function ReaderModel(){
+					//todo 实现和阅读器相关的数据交互的方法
+					var Chapter_id;
+					var ChapterTotal;
+					var init = function(UIcallback){
+//						getFictionInfo(function(){
+//							getCurChapterContent(Chapter_id, function(data){
+//								//todo 数据渲染
+//								UIcallback && UIcallback(data)
+//							});
+//						})
+						getFictionInfoPromise().then(function(d){
+							return getCurChapterContentPromise();
+						}).then(function(data){
+							UIcallback && UIcallback(data);
+						});
+					}
+					var getFictionInfo = function(callback){
+						$.get('data/chapter.json', function(data){
+							//todo 获得章节信息之后的回调
+							Chapter_id = Util.StorageGetter('last_chapter_id');
+							if(Chapter_id == null){
+								Chapter_id = data.chapters[1].chapter_id;
+							}
+							ChapterTotal = data.chapters.length;
+							callback && callback();
+						}, 'json');
+					}
+					
+					var getFictionInfoPromise = function(){
+						return new Promise(function(resolve,reject){
+							$.get('data/chapter.json', function(data){
+								//todo 获得章节信息之后的回调
+								if(data.result === 0){
+									Chapter_id = Util.StorageGetter('last_chapter_id');
+									if(Chapter_id == null){
+										Chapter_id = data.chapters[1].chapter_id;
+									}
+									ChapterTotal = data.chapters.length;
+									resolve()
+								}else{
+									reject();
+								}
+							}, 'json');
+						})
+					}
+					
+					var getCurChapterContent = function(chapter_id, callback){
+						$.get('data/data' + chapter_id + '.json', function(data){
+							if(data.result === 0){
+								var url = data.jsonp;
+								Util.getBSONP(url, function(data){
+									callback && callback(data);
+								});
+							}
+						}, 'json');
+					}
+					var getCurChapterContentPromise = function(){
+						return new Promise(function(resolve, reject){
+							$.get('data/data' + Chapter_id + '.json', function(data){
+								if(data.result === 0){
+									var url = data.jsonp;
+									Util.getBSONP(url, function(data){
+	//									callback && callback(data);
+										resolve(data);
+									});
+								}else{
+									reject({msg:'fail'});
+								}
+							}, 'json');
+						});
+					}
+					
+					var prevChapter = function(UIcallback){
+						Chapter_id = parseInt(Chapter_id, 10);
+						if(Chapter_id === 1){
+							return;
+						}
+						Chapter_id -= 1;
+						getCurChapterContent(Chapter_id, UIcallback);
+						Util.StorageSetter('last_chapter_id', Chapter_id);
+					}
+					var nextChapter = function(UIcallback){
+						Chapter_id = parseInt(Chapter_id, 10);
+						if(Chapter_id === ChapterTotal){
+							return;
+						}
+						Chapter_id += 1;
+						getCurChapterContent(Chapter_id, UIcallback);
+						Util.StorageSetter('last_chapter_id', Chapter_id);
+					}
+					return {
+						init: init,
+						prevChapter: prevChapter,
+						nextChapter: nextChapter
+					}
+				}
+				
+				function ReaderBaseFrame(container){
+					//todo 渲染基本的UI结构
+					function parseChapterData(jsonData){
+						var jsonObj = JSON.parse(jsonData);
+						var html = '<h4>' + jsonObj.t + '</h4>';
+						for(var i=0; i<jsonObj.p.length; i++){
+							html += '<p>' + jsonObj.p[i] + '</p>';
+						}
+						return html;
+					}
+					return function(data){
+						container.html(parseChapterData(data));
+					}
+				}
+				
+				function EventHanlder(){
+					//todo 交互的事件绑定
+					$('#action_mid').click(function(){
+						if(Dom.top_nav.css('display') === 'none'){
+							Dom.bottom_nav.show();
+							Dom.top_nav.show();
+						}else{
+							Dom.bottom_nav.hide();
+							Dom.top_nav.hide();
+							Dom.top_nav_pannel.hide();
+							Dom.font_button.removeClass('current');
+						}
+					});
+					
+					Dom.font_button.click(function(){
+						if(Dom.top_nav_pannel.css('display') === 'none'){
+							Dom.top_nav_pannel.show();
+							Dom.font_button.addClass('current');
+						}else{
+							Dom.top_nav_pannel.hide();
+							Dom.font_button.removeClass('current');
+						}
+					});
+					
+					$('#large-font').click(function(){
+						if(initFontSize > 20){
+							return;
+						}
+						initFontSize += 1;
+						Dom.fiction_container.css('font-size', initFontSize);
+						Util.StorageSetter('font_size', initFontSize);
+					});
+					
+					$('#small-font').click(function(){
+						if(initFontSize < 12){
+							return;
+						}
+						initFontSize -= 1;
+						Dom.fiction_container.css('font-size', initFontSize);
+						Util.StorageSetter('font_size', initFontSize);
+					});
+					
+					
+					
+					$('night_button').click(function(){
+						//todo 触发背景切换事件
+					})
+					
+					Win.scroll(function(){
+						Dom.bottom_nav.hide();
+						Dom.top_nav.hide();
+						Dom.top_nav_pannel.hide();
+						Dom.font_button.removeClass('current');
+					})
+					
+					$('#prev_button').click(function(){
+						//todo 获得章节翻页数据->把数据拿出来渲染
+						readerModel.prevChapter(function(data){
+							readerUI(data);
+						});
+					});
+					
+					$('#next_button').click(function(){
+						readerModel.nextChapter(function(data){
+							readerUI(data);
+						});
+					});
+				}
+				
+				
+				
+				
+				main();
+				
+			})();
 			
 		</script>
 	</body>
