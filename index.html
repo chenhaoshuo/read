@@ -7,6 +7,29 @@
 		<meta name="apple-mobile-web-app-capable" content="yes" />
 		<link rel="stylesheet" href="css/reset.css">
 		<style type="text/css">
+			@keyframes mymove
+        {
+            from {top:0px;}
+            to {top:200px;}
+        }
+
+        @-moz-keyframes mymove /* Firefox */
+        {
+            from {top:0px;}
+            to {top:200px;}
+        }
+
+        @-webkit-keyframes mymove /* Safari 和 Chrome */
+        {
+            from {top:0px;}
+            to {top:200px;}
+        }
+
+        @-o-keyframes mymove /* Opera */
+        {
+            from {top:0px;}
+            to {top:200px;}
+        }
 			 html {
 			     width: 100%;
 			     height: 100%;
@@ -353,7 +376,7 @@
 					var StorageSetter = function(key,val){
 						return localStorage.setItem(prefix + key, val)
 					}
-					var getBSONP = function(url, callback){
+					var getJSONP = function(url, callback){
 						return $.jsonp({
 							url: url,
 							cache: true,
@@ -366,7 +389,7 @@
 						})
 					}
 					return {
-						getBSONP: getBSONP,
+						getJSONP: getJSONP,
 						StorageGetter: StorageGetter,
 						StorageSetter: StorageSetter
 					}
@@ -380,13 +403,13 @@
 					fiction_container: $('#fiction_container'),
 					bk_container: $('.bk_container'),
 					day_icon: $('#day_icon'),
-					night_icon: $('#night_icon')
+					night_icon: $('#night_icon'),
+					root: $('#root')
 				}
 				var Win = $(window);
 				var Doc = $(document);
 				var readerModel;
 				var readerUI;
-				var RootContainer = $('#fiction_container');
 				var initFontSize = Util.StorageGetter('font_size');		//初始化字体大小
 				initFontSize = parseInt(initFontSize);
 				if(!initFontSize){
@@ -398,7 +421,7 @@
 				if(initBkColor === null){
 					initBkColor = "#e9dfc7";
 				}
-				Dom.fiction_container.css('background-color', initBkColor);
+				Dom.root.css('background-color', initBkColor);
 				
 				var initBkId = Util.StorageGetter('bk_id');				
 				if(initBkId === null){
@@ -415,7 +438,7 @@
 				function main(){
 					//todo 整个项目的入口函数
 					readerModel = ReaderModel();
-					readerUI = ReaderBaseFrame(RootContainer);
+					readerUI = ReaderBaseFrame(Dom.fiction_container);
 					readerModel.init(function(data){
 						readerUI(data);
 					});
@@ -426,76 +449,36 @@
 				function ReaderModel(){
 					//todo 实现和阅读器相关的数据交互的方法
 					var Chapter_id;
-					var ChapterTotal;
+					var ChaptetTotal;
 					var init = function(UIcallback){
-//						getFictionInfo(function(){
-//							getCurChapterContent(Chapter_id, function(data){
-//								//todo 数据渲染
-//								UIcallback && UIcallback(data)
-//							});
-//						})
-						getFictionInfoPromise().then(function(d){
-							return getCurChapterContentPromise();
-						}).then(function(data){
-							UIcallback && UIcallback(data);
-						});
+						getFictionInfo(function(){
+							getCurChapterContent(Chapter_id, function(data){
+								//数据渲染
+								UIcallback && UIcallback(data);
+							})
+						})
 					}
 					var getFictionInfo = function(callback){
 						$.get('data/chapter.json', function(data){
 							//todo 获得章节信息之后的回调
 							Chapter_id = Util.StorageGetter('last_chapter_id');
-							if(Chapter_id == null){
+							if(Chapter_id === null){
 								Chapter_id = data.chapters[1].chapter_id;
 							}
-							ChapterTotal = data.chapters.length;
+							ChaptetTotal = data.chapters.length;
 							callback && callback();
 						}, 'json');
 					}
-					
-					var getFictionInfoPromise = function(){
-						return new Promise(function(resolve,reject){
-							$.get('data/chapter.json', function(data){
-								//todo 获得章节信息之后的回调
-								if(data.result === 0){
-									Chapter_id = Util.StorageGetter('last_chapter_id');
-									if(Chapter_id == null){
-										Chapter_id = data.chapters[1].chapter_id;
-									}
-									ChapterTotal = data.chapters.length;
-									resolve()
-								}else{
-									reject();
-								}
-							}, 'json');
-						})
-					}
-					
 					var getCurChapterContent = function(chapter_id, callback){
 						$.get('data/data' + chapter_id + '.json', function(data){
 							if(data.result === 0){
 								var url = data.jsonp;
-								Util.getBSONP(url, function(data){
+								Util.getJSONP(url, function(data){
 									callback && callback(data);
 								});
 							}
 						}, 'json');
 					}
-					
-					var getCurChapterContentPromise = function(){
-						return new Promise(function(resolve, reject){
-							$.get('data/data' + Chapter_id + '.json', function(data){
-								if(data.result === 0){
-									var url = data.jsonp;
-									Util.getBSONP(url, function(data){
-										resolve(data);
-									});
-								}else{
-									reject({msg:'fail'});
-								}
-							}, 'json');
-						});
-					}
-					
 					var prevChapter = function(UIcallback){
 						Chapter_id = parseInt(Chapter_id, 10);
 						if(Chapter_id === 1){
@@ -507,7 +490,7 @@
 					}
 					var nextChapter = function(UIcallback){
 						Chapter_id = parseInt(Chapter_id, 10);
-						if(Chapter_id === ChapterTotal){
+						if(Chapter_id === 4){
 							return;
 						}
 						Chapter_id += 1;
@@ -534,6 +517,7 @@
 					return function(data){
 						container.html(parseChapterData(data));
 					}
+					
 				}
 				
 				function EventHanlder(){
@@ -587,27 +571,27 @@
 						switch(target.id){
 							case "bk_1":
 								initBkColor = '#fff';
-								Dom.fiction_container.css('background-color', initBkColor);
+								Dom.root.css('background-color', initBkColor);
 								break;
 							case "bk_2":
 								initBkColor = '#e9dfc7';
-								Dom.fiction_container.css('background-color', initBkColor);
+								Dom.root.css('background-color', initBkColor);
 								break;
 							case "bk_3":
 								initBkColor = '#a4a4a4';
-								Dom.fiction_container.css('background-color', initBkColor);
+								Dom.root.css('background-color', initBkColor);
 								break;
 							case "bk_4":
 								initBkColor = '#cdefce';
-								Dom.fiction_container.css('background-color', initBkColor);
+								Dom.root.css('background-color', initBkColor);
 								break;
 							case "bk_5":
 								initBkColor = '#283548';
-								Dom.fiction_container.css('background-color', initBkColor);
+								Dom.root.css('background-color', initBkColor);
 								break;
 							case "bk_6":
 								initBkColor = '#0F1410';
-								Dom.fiction_container.css('background-color', initBkColor);
+								Dom.root.css('background-color', initBkColor);
 								break;
 						}
 						Util.StorageSetter('bk_color', initBkColor);
@@ -619,7 +603,7 @@
 						if(Dom.day_icon.css('display') === 'none'){
 							Dom.day_icon.show();
 							Dom.night_icon.hide();
-							Dom.fiction_container.css('background-color', '#0F1410');
+							Dom.root.css('background-color', '#0F1410');
 							$('#bk_6')
 								.children('div').addClass('bk-container-current')	
 								.parent().siblings().children('div').removeClass('bk-container-current');
@@ -628,7 +612,7 @@
 						}else{
 							Dom.day_icon.hide();
 							Dom.night_icon.show();
-							Dom.fiction_container.css('background-color', '#e9dfc7');
+							Dom.root.css('background-color', '#e9dfc7');
 							$('#bk_2')
 								.children('div').addClass('bk-container-current')	
 								.parent().siblings().children('div').removeClass('bk-container-current');
@@ -645,17 +629,19 @@
 					})
 					
 					$('#prev_button').click(function(){
-						//todo 获得章节翻页数据->把数据拿出来渲染
+						//todo 获得章节的翻页数据 把数据拿出来做渲染
 						readerModel.prevChapter(function(data){
 							readerUI(data);
 						});
+						$('body').scrollTop(0);
 					});
 					
 					$('#next_button').click(function(){
 						readerModel.nextChapter(function(data){
 							readerUI(data);
 						});
-					});
+						$('body').scrollTop(0)
+					})
 				}
 				
 				main();
